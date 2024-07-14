@@ -25,8 +25,8 @@ bot = lightbulb.BotApp(token=os.getenv("DISCORD_TOKEN"),
                        },
                        intents=hikari.Intents.ALL)
 
-
 bot.load_extensions("extensions.moderation")
+
 
 # slash command to reload an extension (only available in guild 941744574529957898 and only invokable by the bot owner))
 @bot.command
@@ -37,11 +37,18 @@ async def reload(ctx: lightbulb.SlashContext) -> None:
     if ctx.author.id == 712439467901976660:
         try:
             bot.reload_extensions(f"extensions.{ctx.options.extension}")
-            await ctx.respond(embed=hikari.Embed(title="Reloaded!", description=f"Reloaded extension {ctx.options.extension}", color=hikari.Color.green()))
+            await ctx.respond(embed=hikari.Embed(
+                title="Reloaded!",
+                description=f"Reloaded extension {ctx.options.extension}",
+                color=hikari.Color.from_rgb(0, 255, 0)),
+                              ephemeral=True)
         except lightbulb.errors.ExtensionNotLoaded:
-            await ctx.respond(embed=hikari.Embed(title="Error!", description=f"Extension {ctx.options.extension} is not loaded!", color=hikari.Color.red()))
-    
-        
+           
+            await ctx.respond(embed=hikari.Embed(
+                title="Error!",
+                description=f"Extension {ctx.options.extension} is not loaded!",
+                color=hikari.Color.from_rgb(255, 0, 0)),
+                              ephemeral=True)
 
 
 bot.run()
