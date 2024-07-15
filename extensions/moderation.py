@@ -61,6 +61,25 @@ async def ticket(ctx: lightbulb.SlashContext):
 	# respond to original interaction
 
 
+@plugin.command
+@lightbulb.option('amount', 'The amount of messages to purge')
+@lightbulb.option('user',
+                  'The user to purge messages from',
+                  type=hikari.User,
+                  required=False)
+@lightbulb.option('reason',
+                  'The reason for purging these messages',
+                  type=str,
+                  required=False)
+@lightbulb.command(name='purge',
+                   description='Purge x amount of messages from the channel')
+@lightbulb.implements(lightbulb.SlashCommand)
+async def purge(ctx: lightbulb.SlashContext):
+	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+	                  ephemeral=True)
+
+
+	# steps to purge messages
 def load(bot):
 	bot.add_plugin(plugin)
 
