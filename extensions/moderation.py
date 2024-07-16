@@ -65,13 +65,11 @@ async def ticket(ctx: lightbulb.SlashContext):
 @plugin.command
 @lightbulb.option("amount", "The amount of messages to purge", type=int, max_value=100, min_value=1, required=True)
 @lightbulb.option("user", "The user to purge messages from", type=hikari.User, required=False)
-@lightbulb.option("reason", "The reason for purging messages", type=str, required=False)
 @lightbulb.command("purge", "Purges messages from a channel")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def purge(ctx: lightbulb.SlashContext):
 		amount = ctx.options.amount
 		user = ctx.options.user
-		reason = ctx.options.reason
 
 		# Send an initial response
 		await ctx.respond(embed=hikari.Embed(title="Purging messages...", color=hikari.Color.from_rgb(255, 0, 0)), flags=hikari.MessageFlag.EPHEMERAL)
