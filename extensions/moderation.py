@@ -62,30 +62,39 @@ async def ticket(ctx: lightbulb.SlashContext):
 	# respond to original interaction
 
 
-@plugin.command()
-@lightbulb.option("count",
-                  "The amount of messages to purge.",
-                  type=int,
-                  max_value=100,
-                  min_value=1)
-@lightbulb.command("purge",
-                   "Purge a certain amount of messages from a channel.",
-                   pass_options=True)
+@plugin.command
+@lightbulb.option("amount", "The amount of messages to purge", type=int, max_value=100, min_value=1)
+@lightbulb.option("user", "The user to purge messages from", type=hikari.User, required=False)
+@lightbulb.option("reason", "The reason for purging messages", type=str, required=False)
+@lightbulb.command("purge", "Purges messages from a channel")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def purge(ctx: lightbulb.SlashContext, count: int):
+async def purge(ctx: lightbulb.SlashContext, amount: int, user: hikari.User = None, reason: str = None):
+	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE, ephemeral=True)
 	if not ctx.guild_id:
 		await ctx.respond("This command can only be used in a server.")
 		return
-
-	messages = (await ctx.app.rest.fetch_messages(
-	    ctx.channel_id
-	).take_until(lambda m: datetime.datetime.now(datetime.timezone.utc) -
-	             datetime.timedelta(days=14) > m.created_at).limit(count))
+	if amount > 100:
+		await ctx.respond(embed=hikari.Embed(
+			title="❌ Error", 
+			description="You can only purge up to 100 messages at a time.", 
+			color=hikari.Color.from_rgb(255, 0, 0)))
+		return
+	messages = await ctx.app.rest.fetch_messages(ctx.channel_id).take_until(
+		lambda m: datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14) > m.created_at
+	).limit(amount)
 	if messages:
+		if user:
+			messages = [m for m in messages if m.author == user]
 		await ctx.app.rest.delete_messages(ctx.channel_id, messages)
-		await ctx.respond(f"Purged {len(messages)} messages.")
+		await ctx.respond(embed=hikari.Embed(
+			title="Purged!", 
+			description=f"Purged {len(messages)} messages.", 
+			color=hikari.Color.from_rgb(0, 255, 0)))
 	else:
-		await ctx.respond("Could not find any messages younger than 14 days!")
+		await ctx.respond(embed=hikari.Embed(
+			title="Error!", 
+			description="Could not find any messages younger than 14 days!", 
+			color=hikari.Color.from_rgb(255, 0, 0)))
 
 
 def load(bot):
@@ -94,3 +103,6 @@ def load(bot):
 
 def unload(bot):
 	bot.remove_plugin(plugin)
+
+
+
