@@ -1,5 +1,6 @@
 import lightbulb
 import hikari
+import datetime
 
 plugin = lightbulb.Plugin("Moderation")
 
@@ -61,25 +62,32 @@ async def ticket(ctx: lightbulb.SlashContext):
 	# respond to original interaction
 
 
-@plugin.command
-@lightbulb.option('amount', 'The amount of messages to purge')
-@lightbulb.option('user',
-                  'The user to purge messages from',
-                  type=hikari.User,
-                  required=False)
-@lightbulb.option('reason',
-                  'The reason for purging these messages',
-                  type=str,
-                  required=False)
-@lightbulb.command(name='purge',
-                   description='Purge x amount of messages from the channel')
+@plugin.command()
+@lightbulb.option("count",
+                  "The amount of messages to purge.",
+                  type=int,
+                  max_value=100,
+                  min_value=1)
+@lightbulb.command("purge",
+                   "Purge a certain amount of messages from a channel.",
+                   pass_options=True)
 @lightbulb.implements(lightbulb.SlashCommand)
-async def purge(ctx: lightbulb.SlashContext):
-	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
-	                  ephemeral=True)
+async def purge(ctx: lightbulb.SlashContext, count: int):
+	if not ctx.guild_id:
+		await ctx.respond("This command can only be used in a server.")
+		return
+
+	messages = (await ctx.app.rest.fetch_messages(
+	    ctx.channel_id
+	).take_until(lambda m: datetime.datetime.now(datetime.timezone.utc) -
+	             datetime.timedelta(days=14) > m.created_at).limit(count))
+	if messages:
+		await ctx.app.rest.delete_messages(ctx.channel_id, messages)
+		await ctx.respond(f"Purged {len(messages)} messages.")
+	else:
+		await ctx.respond("Could not find any messages younger than 14 days!")
 
 
-	# steps to purge messages
 def load(bot):
 	bot.add_plugin(plugin)
 
