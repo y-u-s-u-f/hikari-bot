@@ -41,14 +41,14 @@ async def reload(ctx: lightbulb.SlashContext) -> None:
                 title="Reloaded!",
                 description=f"Reloaded extension {ctx.options.extension}",
                 color=hikari.Color.from_rgb(0, 255, 0)),
-                              ephemeral=True)
+                              flags=hikari.MessageFlag.EPHEMERAL)
         except lightbulb.errors.ExtensionNotLoaded:
            
             await ctx.respond(embed=hikari.Embed(
                 title="Error!",
                 description=f"Extension {ctx.options.extension} is not loaded!",
                 color=hikari.Color.from_rgb(255, 0, 0)),
-                              ephemeral=True)
+                              flags=hikari.MessageFlag.EPHEMERAL)
 
 
 bot.run()
