@@ -59,7 +59,7 @@ async def ticket(ctx: lightbulb.SlashContext):
 	channel = ctx.get_guild().create_text_channel(
 	    name=f'{ctx.author.username}-ticket',
 	    topic=f'Ticket for {ctx.author.username}',
-	    category=ctx.get_channel(941744574529957899))
+	    category=ctx.get_guild().get_channel(941744574529957899))
 	overwrite = channel.permissions_for(ctx.author)
 	overwrite.update(send_messages=True,
 	                 view_channel=True,
