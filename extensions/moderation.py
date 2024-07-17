@@ -48,66 +48,92 @@ async def ban(ctx: lightbulb.SlashContext):
 
 
 @plugin.command
-@lightbulb.option('reason', 'The reason for the creation of this ticket')
+@lightbulb.option("reason", "The reason for the creation of this ticket")
 @lightbulb.command(
     name='ticket',
     description='Create a ticket to get help from the staff team')
 @lightbulb.implements(lightbulb.SlashCommand)
 async def ticket(ctx: lightbulb.SlashContext):
 	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
-	                  ephemeral=True)
-	# create channel
-	# update overwrites
-	# send message in newly created channel
-	# respond to original interaction
+	                  flags=hikari.MessageFlag.EPHEMERAL)
+	channel = ctx.get_guild().create_text_channel(
+	    name=f'{ctx.author.username}-ticket',
+	    topic=f'Ticket for {ctx.author.username}',
+	    category=ctx.get_channel(941744574529957899))
+	overwrite = channel.permissions_for(ctx.author)
+	overwrite.update(send_messages=True,
+	                 view_channel=True,
+	                 read_message_history=True,
+	                 read_messages=True)
+	await channel.set_permissions(ctx.author, overwrite=overwrite)
+	await channel.send(embed=hikari.Embed(
+	    title='New Ticket!',
+	    description=f'{ctx.author.mention} has created a ticket!',
+	    timestamp=datetime.datetime.now(),
+	    color=hikari.Color.from_rgb(0, 255, 0)).set_footer(
+	        text=f'Created by {ctx.author.username}',
+	        icon_url=ctx.author.avatar_url))
+	await ctx.respond(embed=hikari.Embed(
+	    title='Ticket created!',
+	    description=f'Please go to {channel.mention} to see your ticket!',
+	    color=hikari.Color.from_rgb(0, 255, 0)))
 
 
 @plugin.command
-@lightbulb.option("amount", "The amount of messages to purge", type=int, max_value=100, min_value=1, required=True)
-@lightbulb.option("user", "The user to purge messages from", type=hikari.User, required=False)
+@lightbulb.option("amount",
+                  "The amount of messages to purge",
+                  type=int,
+                  max_value=100,
+                  min_value=1,
+                  required=True)
+@lightbulb.option("user",
+                  "The user to purge messages from",
+                  type=hikari.User,
+                  required=False)
 @lightbulb.command("purge", "Purges messages from a channel")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def purge(ctx: lightbulb.SlashContext):
-		amount = ctx.options.amount
-		user = ctx.options.user
+	amount = ctx.options.amount
+	user = ctx.options.user
 
-		# Send an initial response
-		await ctx.respond(embed=hikari.Embed(title="Purging messages...", color=hikari.Color.from_rgb(255, 0, 0)), flags=hikari.MessageFlag.EPHEMERAL)
+	# Send an initial response
+	await ctx.respond(embed=hikari.Embed(title="Purging messages...",
+	                                     color=hikari.Color.from_rgb(255, 0, 0)),
+	                  flags=hikari.MessageFlag.EPHEMERAL)
 
-		if not ctx.guild_id:
-				await ctx.respond("This command can only be used in a server.", flags=hikari.MessageFlag.EPHEMERAL)
-				return
+	if not ctx.guild_id:
+		await ctx.respond("This command can only be used in a server.",
+		                  flags=hikari.MessageFlag.EPHEMERAL)
+		return
 
-		if amount > 100:
-				await ctx.respond(embed=hikari.Embed(
-						title="❌ Error", 
-						description="You can only purge up to 100 messages at a time.", 
-						color=hikari.Color.from_rgb(255, 0, 0)),
-						flags=hikari.MessageFlag.EPHEMERAL
-				)
-				return
+	if amount > 100:
+		await ctx.respond(embed=hikari.Embed(
+		    title="❌ Error",
+		    description="You can only purge up to 100 messages at a time.",
+		    color=hikari.Color.from_rgb(255, 0, 0)),
+		                  flags=hikari.MessageFlag.EPHEMERAL)
+		return
 
-		messages = await ctx.app.rest.fetch_messages(ctx.channel_id).take_until(
-			lambda m: datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14) > m.created_at
-		).limit(amount)
-	
-		if messages:
-			if user:
-					messages = [m for m in messages if m.author == user]
-			await ctx.app.rest.delete_messages(ctx.channel_id, messages)
-			await ctx.respond(embed=hikari.Embed(
-					title="Purged!", 
-					description=f"Purged {len(messages)} messages.", 
-					color=hikari.Color.from_rgb(0, 255, 0)),
-					flags=hikari.MessageFlag.EPHEMERAL
-			)
-		else:
-				await ctx.respond(embed=hikari.Embed(
-						title="Error!", 
-						description="Could not find any messages younger than 14 days!", 
-						color=hikari.Color.from_rgb(255, 0, 0)),
-						flags=hikari.MessageFlag.EPHEMERAL
-				)
+	messages = await ctx.app.rest.fetch_messages(
+	    ctx.channel_id
+	).take_until(lambda m: datetime.datetime.now(datetime.timezone.utc) -
+	             datetime.timedelta(days=14) > m.created_at).limit(amount)
+
+	if messages:
+		if user:
+			messages = [m for m in messages if m.author == user]
+		await ctx.app.rest.delete_messages(ctx.channel_id, messages)
+		await ctx.respond(embed=hikari.Embed(
+		    title="Purged!",
+		    description=f"Purged {len(messages)} messages.",
+		    color=hikari.Color.from_rgb(0, 255, 0)),
+		                  flags=hikari.MessageFlag.EPHEMERAL)
+	else:
+		await ctx.respond(embed=hikari.Embed(
+		    title="Error!",
+		    description="Could not find any messages younger than 14 days!",
+		    color=hikari.Color.from_rgb(255, 0, 0)),
+		                  flags=hikari.MessageFlag.EPHEMERAL)
 
 
 def load(bot):
@@ -116,6 +142,3 @@ def load(bot):
 
 def unload(bot):
 	bot.remove_plugin(plugin)
-
-
-
