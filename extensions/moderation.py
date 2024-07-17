@@ -66,17 +66,15 @@ async def ticket(ctx: lightbulb.SlashContext):
 	                 read_message_history=True,
 	                 read_messages=True)
 	await channel.set_permissions(ctx.author, overwrite=overwrite)
-	await channel.send(embed=hikari.Embed(
-	    title='New Ticket!',
-	    description=f'{ctx.author.mention} has created a ticket!',
-	    timestamp=datetime.datetime.now(),
-	    color=hikari.Color.from_rgb(0, 255, 0)).set_footer(
-	        text=f'Created by {ctx.author.username}',
-	        icon_url=ctx.author.avatar_url))
+
 	await ctx.respond(embed=hikari.Embed(
 	    title='Ticket created!',
 	    description=f'Please go to {channel.mention} to see your ticket!',
 	    color=hikari.Color.from_rgb(0, 255, 0)))
+	await channel.send(embed=hikari.Embed(
+	    title='Ticket created!',
+	    description=f'Please go to {channel.mention} to see your ticket!',
+	    color=discord.Color.green()))
 
 
 @plugin.command
