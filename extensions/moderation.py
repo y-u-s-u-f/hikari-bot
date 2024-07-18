@@ -56,28 +56,29 @@ async def ban(ctx: lightbulb.SlashContext):
 async def ticket(ctx: lightbulb.SlashContext):
 	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
 	                  flags=hikari.MessageFlag.EPHEMERAL)
-	channel = await ctx.bot.create_text_channel(
-	    ctx.guild_id,
-	    name=f'{ctx.author.username}-ticket',
-	    topic=f'Ticket for {ctx.author.username}',
-	    category=941744574529957899)
 	overwrite = hikari.PermissionOverwrite(
-	    id=channel.id,
+	    id=ctx.channel_id,
 	    type=hikari.PermissionOverwriteType.MEMBER,
 	    allow=(hikari.Permissions.VIEW_CHANNEL | hikari.Permissions.SEND_MESSAGES
 	           | hikari.Permissions.READ_MESSAGE_HISTORY))
+	channel = await ctx.bot.rest.create_guild_text_channel(
+	    guild=ctx.guild_id,
+	    name=f'{ctx.author.username}-ticket',
+	    topic=f'Ticket for {ctx.author.username}',
+	    permission_overwrites=[overwrite],
+	    category=941744574529957899)
 
 	await ctx.respond(embed=hikari.Embed(
 	    title='Ticket created!',
 	    description=f'Please go to {channel.mention} to see your ticket!',
 	    color=hikari.Color.from_rgb(0, 255, 0)))
-	await channel.send(embed=discord.Embed(
+	await channel.send(embed=hikari.Embed(
 	    title='New Ticket!',
-	    description=f'{interaction.user.mention} has created a ticket!',
+	    description=f'{ctx.author.mention} has created a ticket!',
 	    timestamp=datetime.datetime.now(),
-	    color=discord.Color.green()).set_footer(
-	        text=f'Created by {interaction.user.name}',
-	        icon_url=interaction.user.display_avatar.url))
+	    color=hikari.Color.from_rgb(0, 255, 0)).set_author(
+	        name=f'Created by {ctx.author.username}',
+	        icon=str(ctx.author.display_avatar_url)))
 
 
 @plugin.command
