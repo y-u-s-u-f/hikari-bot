@@ -138,6 +138,36 @@ async def purge(ctx: lightbulb.SlashContext):
 		                  flags=hikari.MessageFlag.EPHEMERAL)
 
 
+@plugin.command
+@lightbulb.option("reason",
+                  "The reason for locking the thread",
+                  type=str,
+                  required=False)
+@lightbulb.command("lock", "Locks a thread")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def lock(ctx: lightbulb.SlashContext):
+	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+	                  flags=hikari.MessageFlag.EPHEMERAL)
+
+
+	# command
+@plugin.command
+@lightbulb.option("thread",
+                  "The ID or link of the thread to unlock",
+                  type=str,
+                  required=False)
+@lightbulb.option("reason",
+                  "The reason for unlocking the thread",
+                  type=str,
+                  required=False)
+@lightbulb.command("unlock", "Unlocks a thread")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def unlock(ctx: lightbulb.SlashContext):
+	await ctx.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+	                  flags=hikari.MessageFlag.EPHEMERAL)
+	# command
+
+
 def load(bot):
 	bot.add_plugin(plugin)
 
